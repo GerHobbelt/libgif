@@ -1,11 +1,12 @@
-= GIFLIB =
+# GIFLIB 
 
 This is the README file of GIFLIB, a library for manipulating GIF files.
 
 Latest versions of GIFLIB are currently hosted at:
+
     http://sourceforge.net/projects/giflib
 
-== Overview ==
+## Overview 
 
 GIF is a legacy format; we recommend against generating new images in
 it.  For a cleaner, more extensible design with better color support
@@ -29,7 +30,7 @@ The project has a long and confusing history, described in history.adoc
 
 The project to-do list is in TODO.
 
-== Authors ==
+## Authors 
 
 Gershon Elber <gershon[AT]cs.technion.sc.il>
 	original giflib code
