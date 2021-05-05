@@ -126,20 +126,20 @@ SPDX-License-Identifier: MIT
 /* The two characters '%' and '!' are used in the control string: */
 #define ISCTRLCHAR(x) (((x) == '%') || ((x) == '!'))
 
-static char *GAErrorToken;  /* On error, ErrorToken is set to point to it. */
-static int GATestAllSatis(char *CtrlStrCopy, char *CtrlStr, char **argv_end,
-                          char ***argv, void *Parameters[MAX_PARAM],
+static const char *GAErrorToken;  /* On error, ErrorToken is set to point to it. */
+static int GATestAllSatis(char *CtrlStrCopy, char *CtrlStr, const char **argv_end,
+                          const char ***argv, void *Parameters[MAX_PARAM],
                           int *ParamCount);
 static bool GAUpdateParameters(void *Parameters[], int *ParamCount,
-                              char *Option, char *CtrlStrCopy, char *CtrlStr,
-                              char **argv_end, char ***argv);
+                              const char *Option, char *CtrlStrCopy, char *CtrlStr,
+                              const char **argv_end, const char ***argv);
 static int GAGetParmeters(void *Parameters[], int *ParamCount,
-                          char *CtrlStrCopy, char *Option, char **argv_end,
-                          char ***argv);
+                          char *CtrlStrCopy, const char *Option, const char **argv_end,
+                          const char ***argv);
 static int GAGetMultiParmeters(void *Parameters[], int *ParamCount,
-                               char *CtrlStrCopy, char **argv_end, char ***argv);
+                               char *CtrlStrCopy, const char **argv_end, const char ***argv);
 static void GASetParamCount(char *CtrlStr, int Max, int *ParamCount);
-static bool GAOptionExists(char **argv_end, char **argv);
+static bool GAOptionExists(const char **argv_end, const char **argv);
 
 /***************************************************************************
  Allocate or die
@@ -163,13 +163,13 @@ xmalloc(unsigned size) {
 ***************************************************************************/
 bool
 GAGetArgs(int argc,
-        char **argv,
+        const char **argv,
         char *CtrlStr, ...) {
 
     int i, ParamCount = 0;
     void *Parameters[MAX_PARAM];     /* Save here parameter addresses. */
     char CtrlStrCopy[CTRL_STR_MAX_LEN];
-    char **argv_end = argv + argc;
+    const char **argv_end = argv + argc;
     va_list ap;
 
     strncpy(CtrlStrCopy, CtrlStr, sizeof(CtrlStrCopy)-1);
@@ -184,7 +184,7 @@ GAGetArgs(int argc,
 	bool Error = false;
         if (!GAOptionExists(argv_end, argv))
             break;    /* The loop. */
-        char *Option = *argv++;
+        const char *Option = *argv++;
         if ((Error = GAUpdateParameters(Parameters, &ParamCount, Option,
                                         CtrlStrCopy, CtrlStr, argv_end,
                                         &argv)) != false)
@@ -205,8 +205,8 @@ GAGetArgs(int argc,
 static int
 GATestAllSatis(char *CtrlStrCopy,
                char *CtrlStr,
-               char **argv_end,
-               char ***argv,
+               const char **argv_end,
+               const char ***argv,
                void *Parameters[MAX_PARAM],
                int *ParamCount) {
 
@@ -228,7 +228,7 @@ GATestAllSatis(char *CtrlStrCopy,
     if (!ISCTRLCHAR(CtrlStr[i + 2])) {
         GASetParamCount(CtrlStr, i, ParamCount); /* Point in correct param. */
         *(int *)Parameters[(*ParamCount)++] = argv_end - *argv;
-	*(char ***)Parameters[(*ParamCount)++] = *argv;
+	*(const char ***)Parameters[(*ParamCount)++] = *argv;
     }
 
     i = 0;
@@ -248,11 +248,11 @@ GATestAllSatis(char *CtrlStrCopy,
 static bool
 GAUpdateParameters(void *Parameters[],
                    int *ParamCount,
-                   char *Option,
+                   const char *Option,
                    char *CtrlStrCopy,
                    char *CtrlStr,
-                   char **argv_end,
-                   char ***argv) {
+                   const char **argv_end,
+                   const char ***argv) {
 
     int i;
     bool BooleanTrue = Option[2] != '-';
@@ -300,9 +300,9 @@ static int
 GAGetParmeters(void *Parameters[],
                int *ParamCount,
                char *CtrlStrCopy,
-               char *Option,
-               char **argv_end,
-               char ***argv) {
+               const char *Option,
+               const char **argv_end,
+               const char ***argv) {
 
     int i = 0, ScanRes;
 
@@ -350,7 +350,7 @@ GAGetParmeters(void *Parameters[],
               break;
           case 's':    /* It as a string. */
               ScanRes = 1;    /* Allways O.K. */
-	      *(char **)Parameters[(*ParamCount)++] = *((*argv)++);
+	          *(const char **)Parameters[(*ParamCount)++] = *((*argv)++);
               break;
           case '*':    /* Get few parameters into one: */
               ScanRes = GAGetMultiParmeters(Parameters, ParamCount,
@@ -389,8 +389,8 @@ static int
 GAGetMultiParmeters(void *Parameters[],
                     int *ParamCount,
                     char *CtrlStrCopy,
-                    char **argv_end,
-                    char ***argv) {
+                    const char **argv_end,
+                    const char ***argv) {
 
     int i = 0, ScanRes, NumOfPrm = 0;
     void **Pmain, **Ptemp;
@@ -400,7 +400,7 @@ GAGetMultiParmeters(void *Parameters[],
         long *LngArray[MAX_PARAM];
         float *FltArray[MAX_PARAM];
         double *DblArray[MAX_PARAM];
-        char *ChrArray[MAX_PARAM];
+        const char *ChrArray[MAX_PARAM];
     } TmpArray;
 
     do {
@@ -521,8 +521,8 @@ GASetParamCount(char *CtrlStr,
  given list argc, argv:
 ***************************************************************************/
 static bool
-GAOptionExists(char **argv_end,
-               char **argv) {
+GAOptionExists(const char **argv_end,
+               const char **argv) {
 
     while (argv < argv_end)
         if ((*argv++)[0] == '-')

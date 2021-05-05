@@ -70,7 +70,11 @@ static void QuitGifError(GifFileType *GifFile);
 /******************************************************************************
  Interpret the command line and scan the given GIF file.
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gifbg_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int	i, l, LevelWidth, LogNumLevels, ErrorCode, Count = 0;
     bool Error, FlipDir, DoAllMaximum = false,

@@ -50,7 +50,11 @@ static void QuitGifError(GifFileType *GifFileIn, GifFileType *GifFileOut);
 /******************************************************************************
  Interpret the command line and scan the given GIF file.
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gifhisto_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int	i, j, ErrorCode, NumFiles, ExtCode, CodeSize, NumColors = 2, ImageNum = 0;
     bool Error, TextFlag = false, SizeFlag = false,

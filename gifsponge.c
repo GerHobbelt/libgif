@@ -30,7 +30,11 @@ SPDX-License-Identifier: MIT
 
 #define PROGRAM_NAME	"gifsponge"
 
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gifsponge_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int	i, ErrorCode;
     GifFileType *GifFileIn, *GifFileOut = (GifFileType *)NULL;

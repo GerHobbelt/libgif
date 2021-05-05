@@ -49,7 +49,11 @@ static void QuitGifError(GifFileType *GifFileIn, GifFileType *GifFileOut)
 /******************************************************************************
  Main sequence
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int giffilter_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     GifFileType *GifFileIn = NULL, *GifFileOut = NULL;
     GifRecordType RecordType;

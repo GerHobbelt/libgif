@@ -71,7 +71,11 @@ mkstemp(char *tpl)
  This is simply: read until EOF, then close the output, test its length, and
  if non zero then rename it.
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gifinto_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int FD;
     int	NumFiles;

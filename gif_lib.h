@@ -295,6 +295,23 @@ extern void GifDrawBoxedText8x8(SavedImage *Image,
                           const char *legend,
                           const int border, const int bg, const int fg);
 
+#if defined(BUILD_MONOLITHIC)
+extern int gif2rgb_main(int argc, const char** argv);
+extern int gifbg_main(int argc, const char** argv);
+extern int gifbuild_main(int argc, const char** argv);
+extern int gifclrmp_main(int argc, const char** argv);
+extern int gifcolor_main(int argc, const char** argv);
+extern int gifecho_main(int argc, const char** argv);
+extern int giffilter_main(int argc, const char** argv);
+extern int giffix_main(int argc, const char** argv);
+extern int gifhisto_main(int argc, const char** argv);
+extern int gifinto_main(int argc, const char** argv);
+extern int gifsponge_main(int argc, const char** argv);
+extern int giftext_main(int argc, const char** argv);
+extern int giftool_main(int argc, const char** argv);
+extern int gifwedge_main(int argc, const char** argv);
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

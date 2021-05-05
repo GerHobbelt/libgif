@@ -23,7 +23,7 @@ SPDX-License-Identifier: MIT
 #define CMD_ERR_NumRead   4    /* Failed on reading number. */
 #define CMD_ERR_AllSatis  5    /* Fail to satisfy (must-'!') option. */
 
-bool GAGetArgs(int argc, char **argv, char *CtrlStr, ...);
+bool GAGetArgs(int argc, const char **argv, char *CtrlStr, ...);
 void GAPrintErrMsg(int Error);
 void GAPrintHowTo(char *CtrlStr);
 

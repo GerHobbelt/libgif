@@ -42,7 +42,11 @@ static int
 /******************************************************************************
  Interpret the command line and scan the given GIF file.
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gifwedge_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int	i, j, l, c, LevelStep, LogNumLevels, ErrorCode, Count = 0; 
     bool Error, LevelsFlag = false, SizeFlag = false, HelpFlag = false;

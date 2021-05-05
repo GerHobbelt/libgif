@@ -43,7 +43,11 @@ static void PrintLZCodes(GifFileType *GifFile);
 /******************************************************************************
  Interpret the command line and scan the given GIF file.
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int giftext_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int i, j, ExtCode, ErrorCode, CodeSize, NumFiles, Len, ImageNum = 1;
     bool Error,

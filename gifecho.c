@@ -51,7 +51,11 @@ static void GenRasterTextLine(GifRowType *RasterBuffer, char *TextLine,
 /******************************************************************************
  Interpret the command line and generate the given GIF file.
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gifecho_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int	i, j, l, ImageWidth, ImageHeight, NumOfLines, LogNumLevels,
 	ErrorCode, NumLevels, ColorMapSize = 1, 

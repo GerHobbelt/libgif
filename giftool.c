@@ -12,7 +12,10 @@ SPDX-License-Identifier: MIT
 #include <fcntl.h>
 #include <stdbool.h>
 
+#ifndef _MSC_VER
 #include "getopt.h"
+#else
+#endif
 #include "gif_lib.h"
 #include "getarg.h"
 
@@ -63,9 +66,9 @@ bool getbool(char *from)
 	    return sp->val;
 
     (void)fprintf(stderr, 
-		  "giftool: %s is not a valid boolean argument.\n",
+		  "giftool: %s is not a valid boolean argument. Assuming default value: 'yes'.\n",
 		  sp->name);
-    exit(EXIT_FAILURE);
+    return true;
 }
 
 struct operation {
@@ -94,7 +97,11 @@ struct operation {
     };
 };
 
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int giftool_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     extern char	*optarg;	/* set by getopt */
     extern int	optind;		/* set by getopt */
@@ -116,7 +123,7 @@ int main(int argc, char **argv)
     {
 	if (top >= operations + MAX_OPERATIONS) {
 	    (void)fprintf(stderr, "giftool: too many operations.");
-	    exit(EXIT_FAILURE);
+	    return EXIT_FAILURE;
 	}
 
 	switch (status)
@@ -165,7 +172,7 @@ int main(int argc, char **argv)
 		}
 
 		(void) fprintf(stderr, "giftool: bad selection.\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	    }
 	    break;
 
@@ -179,14 +186,14 @@ int main(int argc, char **argv)
 	    if (cp == NULL)
 	    {
 		(void) fprintf(stderr, "giftool: missing comma in coordinate pair.\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	    }
 	    top->p.x = atoi(optarg);
 	    top->p.y = atoi(cp+1);
 	    if (top->p.x < 0 || top->p.y < 0)
 	    {
 		(void) fprintf(stderr, "giftool: negative coordinate.\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	    }
 	    break;
 
@@ -211,15 +218,15 @@ int main(int argc, char **argv)
     /* read in a GIF */
     if ((GifFileIn = DGifOpenFileHandle(0, &ErrorCode)) == NULL) {
 	PrintGifError(ErrorCode);
-	exit(EXIT_FAILURE);
+	return EXIT_FAILURE;
     }
     if (DGifSlurp(GifFileIn) == GIF_ERROR) {
 	PrintGifError(GifFileIn->Error);
-	exit(EXIT_FAILURE);
+	return EXIT_FAILURE;
     }
     if ((GifFileOut = EGifOpenFileHandle(1, &ErrorCode)) == NULL) {
 	PrintGifError(ErrorCode);
-	exit(EXIT_FAILURE);
+	return EXIT_FAILURE;
     }
 
     /* if the selection is defaulted, compute it; otherwise bounds-check it */
@@ -232,7 +239,7 @@ int main(int argc, char **argv)
 	    {
 		(void) fprintf(stderr,
 			       "giftool: selection index out of bounds.\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	    }
 
     /* perform the operations we've gathered */
@@ -497,8 +504,7 @@ int main(int argc, char **argv)
 			(void)putchar(*cp);
 		}
 	    }
-	    exit(EXIT_SUCCESS);
-	    break;
+	    return EXIT_SUCCESS;
 
 	case interlace:
 	    for (i = 0; i < nselected; i++)
@@ -552,7 +558,7 @@ int main(int argc, char **argv)
 
 	default:
 	    (void)fprintf(stderr, "giftool: unknown operation mode\n");
-	    exit(EXIT_FAILURE);
+	    return EXIT_FAILURE;
 	}
 
     /* write out the results */
@@ -573,7 +579,7 @@ int main(int argc, char **argv)
     else if (DGifCloseFile(GifFileIn, &ErrorCode) == GIF_ERROR)
 	PrintGifError(ErrorCode);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 /* end */

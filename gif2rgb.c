@@ -496,7 +496,11 @@ static void GIF2RGB(int NumFiles, char *FileName,
 /******************************************************************************
 * Interpret the command line and scan the given GIF file.
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gif2rgb_main(int argc, const char** argv)
+#else
+int main(int argc, const char **argv)
+#endif
 {
     bool Error, OutFileFlag = false, ColorFlag = false, SizeFlag = false;
     int NumFiles, Width = 0, Height = 0, ExpNumOfColors = 8;

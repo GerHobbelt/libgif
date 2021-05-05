@@ -42,7 +42,11 @@ static int EscapeString(char *cp, char *tp);
 /******************************************************************************
  Main sequence
 ******************************************************************************/
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+int gifbuild_main(int argc, const char** argv)
+#else
+int main(int argc, const char** argv)
+#endif
 {
     int	NumFiles;
     bool Error,	DisasmFlag = false, HelpFlag = false, TextLineFlag = false;
