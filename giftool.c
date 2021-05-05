@@ -12,10 +12,17 @@ SPDX-License-Identifier: MIT
 #include <fcntl.h>
 #include <stdbool.h>
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(BUILD_MONOLITHIC)
 #include "getopt.h"
 #else
+#define FZ_DATA
+#include "../../../include/mupdf/fitz/getopt.h"
+
+#define getopt fz_getopt
+#define optarg fz_optarg
+#define optind fz_optind
 #endif
+
 #include "gif_lib.h"
 #include "getarg.h"
 
@@ -46,7 +53,7 @@ char *putbool(bool flag, enum boolmode mode)
     return "FAIL";	/* should never happen */
 }
 
-bool getbool(char *from)
+bool getbool(const char *from)
 {
     struct valmap {char *name; bool val;} 
     boolnames[] = {
@@ -89,7 +96,7 @@ struct operation {
 	int delay;
 	int color;
 	int dispose;
-	char *format;
+	const char *format;
 	bool flag;
 	struct {
 	    int x, y;
@@ -103,16 +110,21 @@ int giftool_main(int argc, const char** argv)
 int main(int argc, const char** argv)
 #endif
 {
-    extern char	*optarg;	/* set by getopt */
-    extern int	optind;		/* set by getopt */
     struct operation operations[MAX_OPERATIONS];
     struct operation *top = operations;
     int selected[MAX_IMAGES], nselected = 0;
     bool have_selection = false;
-    char *cp;
+    const char *cp;
     int	i, status, ErrorCode;
     GifFileType *GifFileIn, *GifFileOut = (GifFileType *)NULL;
     struct operation *op;
+
+#if defined(BUILD_MONOLITHIC)
+	fz_getopt_reset();
+#else
+	extern char* optarg;	/* set by getopt */
+	extern int	optind;		/* set by getopt */
+#endif
 
     /*
      * Gather operations from the command line.  We use regular
