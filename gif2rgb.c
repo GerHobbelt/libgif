@@ -50,20 +50,20 @@ static char
 	PROGRAM_NAME
 	" v%- c%-#Colors!d s%-Width|Height!d!d 1%- o%-OutFileName!s h%- GifFile!*s";
 
-static void LoadRGB(char *FileName,
+static int LoadRGB(char *FileName,
 		    int OneFileFlag,
 		    GifByteType **RedBuffer,
 		    GifByteType **GreenBuffer,
 		    GifByteType **BlueBuffer,
 		    int Width, int Height);
-static void SaveGif(GifByteType *OutputBuffer,
+static int SaveGif(GifByteType *OutputBuffer,
 		    int Width, int Height, 
 		    int ExpColorMapSize, ColorMapObject *OutputColorMap);
 
 /******************************************************************************
  Load RGB file into internal frame buffer.
 ******************************************************************************/
-static void LoadRGB(char *FileName,
+static int LoadRGB(char *FileName,
 		    int OneFileFlag,
 		    GifByteType **RedBuffer,
 		    GifByteType **GreenBuffer,
@@ -144,7 +144,7 @@ static void LoadRGB(char *FileName,
 	    if (fread(RedP, Width, 1, rgbfp[0]) != 1 ||
 		fread(GreenP, Width, 1, rgbfp[1]) != 1 ||
 		fread(BlueP, Width, 1, rgbfp[2]) != 1)
-		GIF_EXIT("Input file(s) terminated prematurly.");
+		GIF_EXIT("Input file(s) terminated prematurely.");
 	    RedP += Width;
 	    GreenP += Width;
 	    BlueP += Width;
@@ -154,12 +154,13 @@ static void LoadRGB(char *FileName,
 	fclose(rgbfp[1]);
 	fclose(rgbfp[2]);
     }
+	return EXIT_SUCCESS;
 }
 
 /******************************************************************************
  Save the GIF resulting image.
 ******************************************************************************/
-static void SaveGif(GifByteType *OutputBuffer,
+static int SaveGif(GifByteType *OutputBuffer,
 		    int Width, int Height,
 		    int ExpColorMapSize, ColorMapObject *OutputColorMap)
 {
@@ -170,7 +171,7 @@ static void SaveGif(GifByteType *OutputBuffer,
     /* Open stdout for the output file: */
     if ((GifFile = EGifOpenFileHandle(1, &Error)) == NULL) {
 	PrintGifError(Error);
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     }
 
     if (EGifPutScreenDesc(GifFile,
@@ -179,7 +180,7 @@ static void SaveGif(GifByteType *OutputBuffer,
 	EGifPutImageDesc(GifFile,
 			 0, 0, Width, Height, false, NULL) == GIF_ERROR) {
 	PrintGifError(Error);
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     }
 
     GifQprintf("\n%s: Image 1 at (%d, %d) [%dx%d]:     ",
@@ -188,7 +189,7 @@ static void SaveGif(GifByteType *OutputBuffer,
 
     for (i = 0; i < Height; i++) {
 	if (EGifPutLine(GifFile, Ptr, Width) == GIF_ERROR)
-	    exit(EXIT_FAILURE);
+	    return(EXIT_FAILURE);
 	GifQprintf("\b\b\b\b%-4d", Height - i - 1);
 
 	Ptr += Width;
@@ -196,17 +197,19 @@ static void SaveGif(GifByteType *OutputBuffer,
 
     if (EGifCloseFile(GifFile, &Error) == GIF_ERROR) {
 	PrintGifError(Error);
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     }
+	return EXIT_SUCCESS;
 }
 
 /******************************************************************************
- Close output file (if open), and exit.
+ Close output file (if open), and return success/failure code.
 ******************************************************************************/
-static void RGB2GIF(bool OneFileFlag, int NumFiles, char *FileName,
+static int RGB2GIF(bool OneFileFlag, int NumFiles, char *FileName,
 		    int ExpNumOfColors, int Width, int Height)
 {
     int ColorMapSize;
+	int rv;
 
     GifByteType *RedBuffer = NULL, *GreenBuffer = NULL, *BlueBuffer = NULL,
 	*OutputBuffer = NULL;
@@ -215,13 +218,15 @@ static void RGB2GIF(bool OneFileFlag, int NumFiles, char *FileName,
     ColorMapSize = 1 << ExpNumOfColors;
 
     if (NumFiles == 1) {
-	LoadRGB(FileName, OneFileFlag,
+	rv = LoadRGB(FileName, OneFileFlag,
 		&RedBuffer, &GreenBuffer, &BlueBuffer, Width, Height);
     }
     else {
-	LoadRGB(NULL, OneFileFlag,
+	rv = LoadRGB(NULL, OneFileFlag,
 		&RedBuffer, &GreenBuffer, &BlueBuffer, Width, Height);
     }
+	if (rv != EXIT_SUCCESS)
+		return rv;
 
     if ((OutputColorMap = GifMakeMapObject(ColorMapSize, NULL)) == NULL ||
 	(OutputBuffer = (GifByteType *) malloc(Width * Height *
@@ -231,18 +236,18 @@ static void RGB2GIF(bool OneFileFlag, int NumFiles, char *FileName,
     if (GifQuantizeBuffer(Width, Height, &ColorMapSize,
 		       RedBuffer, GreenBuffer, BlueBuffer,
 		       OutputBuffer, OutputColorMap->Colors) == GIF_ERROR)
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     free((char *) RedBuffer);
     free((char *) GreenBuffer);
     free((char *) BlueBuffer);
 
-    SaveGif(OutputBuffer, Width, Height, ExpNumOfColors, OutputColorMap);
+    return SaveGif(OutputBuffer, Width, Height, ExpNumOfColors, OutputColorMap);
 }
 
 /******************************************************************************
  The real screen dumping routine.
 ******************************************************************************/
-static void DumpScreen2RGB(char *FileName, int OneFileFlag,
+static int DumpScreen2RGB(char *FileName, int OneFileFlag,
 			   ColorMapObject *ColorMap,
 			   GifRowType *ScreenBuffer,
 			   int ScreenWidth, int ScreenHeight)
@@ -282,7 +287,7 @@ static void DumpScreen2RGB(char *FileName, int OneFileFlag,
 
     if (ColorMap == NULL) {
 	fprintf(stderr, "Color map pointer is NULL.\n");
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     }
 
     if (OneFileFlag) {
@@ -335,9 +340,10 @@ static void DumpScreen2RGB(char *FileName, int OneFileFlag,
         fclose(rgbfp[1]);
         fclose(rgbfp[2]);
     }
+	return EXIT_SUCCESS;
 }
 
-static void GIF2RGB(int NumFiles, char *FileName, 
+static int GIF2RGB(int NumFiles, char *FileName, 
 		    bool OneFileFlag, 
 		    char *OutFileName)
 {
@@ -351,27 +357,25 @@ static void GIF2RGB(int NumFiles, char *FileName,
 	InterlacedJumps[] = { 8, 8, 4, 2 };    /* be read - offsets and jumps... */
     int ImageNum = 0;
     ColorMapObject *ColorMap;
-    int Error;
+	int Error;
 
     if (NumFiles == 1) {
-	int Error;
 	if ((GifFile = DGifOpenFileName(FileName, &Error)) == NULL) {
 	    PrintGifError(Error);
-	    exit(EXIT_FAILURE);
+	    return(EXIT_FAILURE);
 	}
     }
     else {
-	int Error;
 	/* Use stdin instead: */
 	if ((GifFile = DGifOpenFileHandle(0, &Error)) == NULL) {
 	    PrintGifError(Error);
-	    exit(EXIT_FAILURE);
+		return(EXIT_FAILURE);
 	}
     }
 
     if (GifFile->SHeight == 0 || GifFile->SWidth == 0) {
 	fprintf(stderr, "Image of width or height 0\n");
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     }
 
     /* 
@@ -401,13 +405,13 @@ static void GIF2RGB(int NumFiles, char *FileName,
     do {
 	if (DGifGetRecordType(GifFile, &RecordType) == GIF_ERROR) {
 	    PrintGifError(GifFile->Error);
-	    exit(EXIT_FAILURE);
+		return(EXIT_FAILURE);
 	}
 	switch (RecordType) {
 	    case IMAGE_DESC_RECORD_TYPE:
 		if (DGifGetImageDesc(GifFile) == GIF_ERROR) {
 		    PrintGifError(GifFile->Error);
-		    exit(EXIT_FAILURE);
+			return(EXIT_FAILURE);
 		}
 		Row = GifFile->Image.Top; /* Image Position relative to Screen. */
 		Col = GifFile->Image.Left;
@@ -418,7 +422,7 @@ static void GIF2RGB(int NumFiles, char *FileName,
 		if (GifFile->Image.Left + GifFile->Image.Width > GifFile->SWidth ||
 		   GifFile->Image.Top + GifFile->Image.Height > GifFile->SHeight) {
 		    fprintf(stderr, "Image %d is not confined to screen dimension, aborted.\n",ImageNum);
-		    exit(EXIT_FAILURE);
+			return(EXIT_FAILURE);
 		}
 		if (GifFile->Image.Interlace) {
 		    /* Need to perform 4 passes on the images: */
@@ -429,7 +433,7 @@ static void GIF2RGB(int NumFiles, char *FileName,
 			    if (DGifGetLine(GifFile, &ScreenBuffer[j][Col],
 				Width) == GIF_ERROR) {
 				PrintGifError(GifFile->Error);
-				exit(EXIT_FAILURE);
+				return(EXIT_FAILURE);
 			    }
 			}
 		}
@@ -439,7 +443,7 @@ static void GIF2RGB(int NumFiles, char *FileName,
 			if (DGifGetLine(GifFile, &ScreenBuffer[Row++][Col],
 				Width) == GIF_ERROR) {
 			    PrintGifError(GifFile->Error);
-			    exit(EXIT_FAILURE);
+				return(EXIT_FAILURE);
 			}
 		    }
 		}
@@ -448,12 +452,12 @@ static void GIF2RGB(int NumFiles, char *FileName,
 		/* Skip any extension blocks in file: */
 		if (DGifGetExtension(GifFile, &ExtCode, &Extension) == GIF_ERROR) {
 		    PrintGifError(GifFile->Error);
-		    exit(EXIT_FAILURE);
+			return(EXIT_FAILURE);
 		}
 		while (Extension != NULL) {
 		    if (DGifGetExtensionNext(GifFile, &Extension) == GIF_ERROR) {
 			PrintGifError(GifFile->Error);
-			exit(EXIT_FAILURE);
+			return(EXIT_FAILURE);
 		    }
 		}
 		break;
@@ -470,27 +474,30 @@ static void GIF2RGB(int NumFiles, char *FileName,
 		: GifFile->SColorMap);
     if (ColorMap == NULL) {
         fprintf(stderr, "Gif Image does not have a colormap\n");
-        exit(EXIT_FAILURE);
+		return(EXIT_FAILURE);
     }
 
     /* check that the background color isn't garbage (SF bug #87) */
     if (GifFile->SBackGroundColor < 0 || GifFile->SBackGroundColor >= ColorMap->ColorCount) {
         fprintf(stderr, "Background color out of range for colormap\n");
-        exit(EXIT_FAILURE);
+		return(EXIT_FAILURE);
     }
 
-    DumpScreen2RGB(OutFileName, OneFileFlag,
+    int rv = DumpScreen2RGB(OutFileName, OneFileFlag,
 		   ColorMap,
 		   ScreenBuffer, 
 		   GifFile->SWidth, GifFile->SHeight);
 
     (void)free(ScreenBuffer);
 
+	if (rv != EXIT_SUCCESS)
+		return rv;
+
     if (DGifCloseFile(GifFile, &Error) == GIF_ERROR) {
 	PrintGifError(Error);
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     }
-
+	return EXIT_SUCCESS;
 }
 
 /******************************************************************************
@@ -520,23 +527,21 @@ int main(int argc, const char **argv)
 	else if (NumFiles > 1)
 	    GIF_MESSAGE("Error in command line parsing - one input file please.");
 	GAPrintHowTo(CtrlStr);
-	exit(EXIT_FAILURE);
+	return(EXIT_FAILURE);
     }
 
     if (HelpFlag) {
 	(void)fprintf(stderr, VersionStr, GIFLIB_MAJOR, GIFLIB_MINOR);
 	GAPrintHowTo(CtrlStr);
-	exit(EXIT_SUCCESS);
+	return(EXIT_SUCCESS);
     }
     if (!OutFileFlag) OutFileName = NULL;
 
     if (SizeFlag && Width > 0 && Height > 0)
-	RGB2GIF(OneFileFlag, NumFiles, *FileName, 
+		return RGB2GIF(OneFileFlag, NumFiles, *FileName, 
 		ExpNumOfColors, Width, Height);
     else
-	GIF2RGB(NumFiles, *FileName, OneFileFlag, OutFileName);
-
-    return 0;
+		return GIF2RGB(NumFiles, *FileName, OneFileFlag, OutFileName);
 }
 
 /* end */
