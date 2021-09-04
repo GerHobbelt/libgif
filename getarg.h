@@ -16,14 +16,14 @@ SPDX-License-Identifier: MIT
 
 /***************************************************************************
  Error numbers as returned by GAGetArg routine:
-***************************************************************************/ 
+***************************************************************************/
 #define CMD_ERR_NotAnOpt  1    /* None Option found. */
 #define CMD_ERR_NoSuchOpt 2    /* Undefined Option Found. */
 #define CMD_ERR_WildEmpty 3    /* Empty input for !*? seq. */
 #define CMD_ERR_NumRead   4    /* Failed on reading number. */
 #define CMD_ERR_AllSatis  5    /* Fail to satisfy (must-'!') option. */
 
-bool GAGetArgs(int argc, const char **argv, char *CtrlStr, ...);
+bool GAGetArgs(int argc, const char** argv, char *CtrlStr, ...);
 void GAPrintErrMsg(int Error);
 void GAPrintHowTo(char *CtrlStr);
 

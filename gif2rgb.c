@@ -57,7 +57,7 @@ static int LoadRGB(char *FileName,
 		    GifByteType **BlueBuffer,
 		    int Width, int Height);
 static int SaveGif(GifByteType *OutputBuffer,
-		    int Width, int Height, 
+		    int Width, int Height,
 		    int ExpColorMapSize, ColorMapObject *OutputColorMap);
 
 /******************************************************************************
@@ -97,7 +97,7 @@ static int LoadRGB(char *FileName,
 
 	    for (i = 0; i < 3; i++) {
 		strncpy(OneFileName, FileName, sizeof(OneFileName)-1);
-		strncat(OneFileName, Postfixes[i], 
+		strncat(OneFileName, Postfixes[i],
 			sizeof(OneFileName) - 1 - strlen(OneFileName));
 
 		if ((rgbfp[i] = fopen(OneFileName, "rb")) == NULL)
@@ -267,9 +267,9 @@ static int DumpScreen2RGB(char *FileName, int OneFileFlag,
 
             for (i = 0; i < 3; i++) {
                 strncpy(OneFileName, FileName, sizeof(OneFileName)-1);
-                strncat(OneFileName, Postfixes[i], 
+                strncat(OneFileName, Postfixes[i],
 			sizeof(OneFileName) - 1 - strlen(OneFileName));
-    
+
                 if ((rgbfp[i] = fopen(OneFileName, "wb")) == NULL) {
                     GIF_EXIT("Can't open input file name.");
                 }
@@ -281,7 +281,7 @@ static int DumpScreen2RGB(char *FileName, int OneFileFlag,
 #ifdef _WIN32
 	_setmode(1, O_BINARY);
 #endif /* _WIN32 */
-        
+
         rgbfp[0] = stdout;
     }
 
@@ -343,8 +343,8 @@ static int DumpScreen2RGB(char *FileName, int OneFileFlag,
 	return EXIT_SUCCESS;
 }
 
-static int GIF2RGB(int NumFiles, char *FileName, 
-		    bool OneFileFlag, 
+static int GIF2RGB(int NumFiles, char *FileName,
+		    bool OneFileFlag,
 		    char *OutFileName)
 {
     int	i, j, Size, Row, Col, Width, Height, ExtCode, Count;
@@ -378,7 +378,7 @@ static int GIF2RGB(int NumFiles, char *FileName,
 	return(EXIT_FAILURE);
     }
 
-    /* 
+    /*
      * Allocate the screen as vector of column of rows. Note this
      * screen is device independent - it's the screen defined by the
      * GIF file parameters.
@@ -467,7 +467,7 @@ static int GIF2RGB(int NumFiles, char *FileName,
 		break;
 	}
     } while (RecordType != TERMINATE_RECORD_TYPE);
-    
+
     /* Lets dump it - set the global variables required and do it: */
     ColorMap = (GifFile->Image.ColorMap
 		? GifFile->Image.ColorMap
@@ -485,7 +485,7 @@ static int GIF2RGB(int NumFiles, char *FileName,
 
     int rv = DumpScreen2RGB(OutFileName, OneFileFlag,
 		   ColorMap,
-		   ScreenBuffer, 
+		   ScreenBuffer,
 		   GifFile->SWidth, GifFile->SHeight);
 
     (void)free(ScreenBuffer);
@@ -506,7 +506,7 @@ static int GIF2RGB(int NumFiles, char *FileName,
 #if defined(BUILD_MONOLITHIC)
 int gif2rgb_main(int argc, const char** argv)
 #else
-int main(int argc, const char **argv)
+int main(int argc, const char** argv)
 #endif
 {
     bool Error, OutFileFlag = false, ColorFlag = false, SizeFlag = false;
@@ -518,7 +518,7 @@ int main(int argc, const char **argv)
 	HelpFlag = false;
 
     if ((Error = GAGetArgs(argc, argv, CtrlStr, &GifNoisyPrint,
-		&ColorFlag, &ExpNumOfColors, &SizeFlag, &Width, &Height, 
+		&ColorFlag, &ExpNumOfColors, &SizeFlag, &Width, &Height,
 		&OneFileFlag, &OutFileFlag, &OutFileName,
 		&HelpFlag, &NumFiles, &FileName)) != false ||
 		(NumFiles > 1 && !HelpFlag)) {
@@ -538,7 +538,7 @@ int main(int argc, const char **argv)
     if (!OutFileFlag) OutFileName = NULL;
 
     if (SizeFlag && Width > 0 && Height > 0)
-		return RGB2GIF(OneFileFlag, NumFiles, *FileName, 
+		return RGB2GIF(OneFileFlag, NumFiles, *FileName,
 		ExpNumOfColors, Width, Height);
     else
 		return GIF2RGB(NumFiles, *FileName, OneFileFlag, OutFileName);
