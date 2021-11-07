@@ -45,7 +45,8 @@ int GifQuantizeBuffer(unsigned int Width, unsigned int Height,
 
 /* These used to live in the library header */
 #define GIF_MESSAGE(Msg) fprintf(stderr, "\n%s: %s\n", PROGRAM_NAME, Msg)
-#define GIF_EXIT(Msg)    { GIF_MESSAGE(Msg); return(-3); }
+#define GIF_EXIT(Msg)         { GIF_MESSAGE(Msg); return(-3); }
+#define GIF_EXIT_NULL(Msg)    { GIF_MESSAGE(Msg); return NULL; }
 
 #endif /* _GETARG_H */
 
